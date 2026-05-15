@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  cnpj      String?  @unique
+  cidade    String?
+  estado    String?
+  criadoEm DateTime @default(now())
+
+  clientes   Cliente[]
+  transacoes Transacao[]
+  materiais  Material[]
+  nfses      Nfse[]
+  das        Das[]
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nome      String
+  documento String?
+  email     String?
+  telefone  String?
+  ativo     Boolean  @default(true)
+  criadoEm DateTime @default(now())
+
+  usuarioId  String
+  usuario    Usuario     @relation(fields: [usuarioId], references: [id])
+  transacoes Transacao[]
+  nfses      Nfse[]
+}
+
+model Transacao {
+  id         String   @id @default(cuid())
+  descricao  String
+  valor      Float
+  tipo       String
+  status     String
+  vencimento DateTime
+  criadoEm  DateTime @default(now())
+
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  clienteId String?
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
+}
+
+model Material {
+  id         String  @id @default(cuid())
+  nome       String
+  categoria  String?
+  quantidade Float
+  minimo     Float   @default(5)
+  custo      Float?
+  criadoEm  DateTime @default(now())
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model Nfse {
+  id        String   @id @default(cuid())
+  numero    String
+  servico   String
+  valor     Float
+  emissao   DateTime
+  status    String
+  xmlUrl    String?
+  criadoEm DateTime @default(now())
+
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  clienteId String?
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
+}
+
+model Das {
+  id          String    @id @default(cuid())
+  competencia String
+  vencimento  DateTime
+  valor       Float     @default(75.90)
+  pagamento   DateTime?
+  status      String
+  criadoEm   DateTime  @default(now())
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+}
